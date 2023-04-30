@@ -16,3 +16,18 @@
 lệnh start server: npm start
 lệnh tắt server : ctrl + c
 lệnh chạy sequelize: npx sequelize-cli db:migrate
+
+câu lệnh đưa project lên git
+trước hết phải tạo repository ở trên web trước
+b1: git init (tạo ra một folder .git ở trong folder)
+nếu có lỗi mạnh tay xóa luôn thư mục .git trong folder
+b2: git add . (chọn tất cả các file thay đổi)
+b3: git commit -m 'comment muốn nhập vào'
+b4: get set remote (copy trên github)
+vd: git remote add origin https://github.com/Duong-D-K/backend-nodejs.git
+b5: git push origin master
+
+câu lệnh đưa chương trình đã sửa đổi lên git
+b1: git add .
+b2: git commit -m 'comment muốn nhập vào'
+b3: git push orgin master
