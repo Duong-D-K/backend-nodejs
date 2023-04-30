@@ -1,0 +1,7 @@
+/node_modules
+/vendor
+/.idea
+.idea/
+.env
+
+//những files hay folders trên sẽ không được gửi lên git 

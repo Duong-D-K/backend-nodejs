@@ -1,0 +1,18 @@
+"dependencies": {
+    "body-parser": ,
+    "dotenv": ,
+    "ejs": ,
+    "express": ,
+    "sequelize": 
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/node": "^7.12.10",
+    "@babel/preset-env": "^7.12.10",
+    "nodemon": "^2.0.7",
+    "sequelize-cli": help to create model in MVC model, and automatically create 'models' folder in 'scr' folder
+  }
+
+lệnh start server: npm start
+lệnh tắt server : ctrl + c
+lệnh chạy sequelize: npx sequelize-cli db:migrate
