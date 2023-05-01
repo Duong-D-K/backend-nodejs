@@ -31,3 +31,6 @@ câu lệnh đưa chương trình đã sửa đổi lên git
 b1: git add .
 b2: git commit -m 'comment muốn nhập vào'
 b3: git push orgin master
+
+câu lệnh đưa table lên trên db sau khi tạo bảng trong model và migrations
+npx sequelize-cli db:migrate
