@@ -3,5 +3,6 @@
 /.idea
 .idea/
 .env
+.txt
 
 //những files hay folders trên sẽ không được gửi lên git 
