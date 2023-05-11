@@ -42,7 +42,22 @@ let handleGetAllUsers = async (req, res) => {
     console.log(users);
 };
 
+let handleCreateNewUser = async (req, res) => {
+    return res.status(200).json(await userService.createNewUser(req.body));
+};
+
+let handleEditUser = async (req, res) => {
+    return res.status(200).json(await userService.updateUserData(req.body));
+};
+
+let handleDeleteUser = async (req, res) => {
+    return res.status(200).json(await userService.deleteUser(req.body.id));
+};
+
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
+    handleCreateNewUser: handleCreateNewUser,
+    handleEditUser: handleEditUser,
+    handleDeleteUser: handleDeleteUser,
 };
