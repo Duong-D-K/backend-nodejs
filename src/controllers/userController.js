@@ -7,14 +7,14 @@ let handleLogin = async (req, res) => {
     //thay the [email==="" || email===null || email ==="undefined"] bang !email
     if (!email || !password) {
         return res.status(500).json({
-            errCode: 1,
+            code: 1,
             message: "Missing inputs parameters",
         });
     }
     let userData = await userService.handleUserLogin(email, password);
 
     return res.status(200).json({
-        errCode: userData.errCode,
+        code: userData.errCode,
         message: userData.errMessage,
         user: userData.user ? userData.user : {},
     });
@@ -25,8 +25,8 @@ let handleGetAllUsers = async (req, res) => {
 
     if (!id) {
         return res.status(200).json({
-            errCode: 1,
-            errMessage: "Missing Required Parameters",
+            code: 1,
+            message: "Missing Required Parameters",
             users: [],
         });
     }
@@ -34,8 +34,8 @@ let handleGetAllUsers = async (req, res) => {
     let users = await userService.getAllUsers(id);
 
     return res.status(200).json({
-        errCode: 0,
-        errMessage: "OK",
+        code: 0,
+        message: "OK",
         users,
     });
 
@@ -61,8 +61,8 @@ let getAllCodes = async (req, res) => {
         console.log("Get all codes error: ", e);
 
         return res.status(200).json({
-            errCode: -1,
-            errMessage: "Error From Server",
+            code: -1,
+            message: "Error From Server",
         });
     }
 };

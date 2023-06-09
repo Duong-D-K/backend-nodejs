@@ -99,8 +99,8 @@ let createNewUser = (data) => {
             if ((await checkUserEmail(data.email)) === true) {
                 //check email exist
                 resolve({
-                    errCode: 1,
-                    errMessage: "Email is Exist, Please Use Another",
+                    code: 1,
+                    message: "Email is Exist, Please Use Another",
                 });
             } else {
                 await db.User.create({
@@ -116,7 +116,7 @@ let createNewUser = (data) => {
                     image: data.avatar,
                 });
 
-                resolve({ errCode: 0, errMessage: "OK" });
+                resolve({ code: 0, message: "OK" });
             }
         } catch (e) {
             reject(e);
@@ -129,15 +129,15 @@ let deleteUser = (id) => {
         try {
             if (!id) {
                 resolve({
-                    errCode: 1,
-                    errMessage: "Missing required paremeter!",
+                    code: 1,
+                    message: "Missing required paremeter!",
                 });
             }
 
             let user = await db.User.findOne({ where: { id: id } });
 
             if (!user) {
-                resolve({ errCode: 2, errMessage: "User is not exist" });
+                resolve({ code: 2, message: "User is not exist" });
             }
 
             //await user.destroy();
@@ -155,7 +155,7 @@ let deleteUser = (id) => {
                 where: { id: id },
             });
 
-            resolve({ errCode: 0, errMessage: "User is deleted!" });
+            resolve({ code: 0, message: "Delete User Successfully!!" });
         } catch (e) {
             reject(e);
         }
@@ -167,8 +167,8 @@ let updateUserData = (data) => {
         try {
             if (!data.id || !data.role || !data.position || !data.gender) {
                 resolve({
-                    errCode: 2,
-                    errMessage: "Missing Required Parameter",
+                    code: 2,
+                    message: "Missing Required Parameter",
                 });
             }
             let user = await db.User.findOne({
@@ -190,9 +190,9 @@ let updateUserData = (data) => {
 
                 await user.save();
 
-                resolve({ errCode: 0, errMessage: "Update User Successful!" });
+                resolve({ code: 0, message: "Update User Successfully!!" });
             } else {
-                resolve({ errCode: 1, errMessage: "User Not Found!" });
+                resolve({ code: 1, message: "User Not Found!" });
             }
         } catch (e) {
             rejcect(e);
@@ -205,12 +205,13 @@ let getAllCodesService = (typeInput) => {
         try {
             if (!typeInput) {
                 resolve({
-                    errCode: 1,
-                    errMessage: "Missing required parameter!",
+                    code: 1,
+                    message: "Missing required parameter!",
                 });
             } else {
                 resolve({
-                    errCode: 0,
+                    code: 0,
+                    message: "",
                     data: await db.Allcode.findAll({ where: { type: typeInput } }),
                 });
             }
