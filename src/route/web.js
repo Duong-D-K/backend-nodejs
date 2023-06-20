@@ -28,9 +28,12 @@ let initWebRouters = (app) => {
     router.post("/api/create-New-User", userController.handleCreateNewUser);
     router.put("/api/edit-User", userController.handleEditUser);
     router.delete("/api/delete-User", userController.handleDeleteUser);
+
     router.get("/api/allcodes", userController.getAllCodes);
 
     router.get("/api/top-doctors-home", doctorController.getTopDoctorHome);
+    router.get("/api/get-all-doctors", doctorController.getAllDoctors);
+    router.post("/api/save-doctor-info", doctorController.saveDoctorInfo);
 
     return app.use("/", router);
 };
