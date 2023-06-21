@@ -44,11 +44,27 @@ let saveDoctorInfo = async (req, res) => {
         return res.status(200).json({
             code: -1,
             message: "Error Code From Server!",
-        })
+        });
+    }
+}
+
+let getDoctorById = async (req, res) => {
+    try {
+        let doctorInfo = await doctorService.getDoctorById(req.query.id);
+
+        return res.status(200).json(doctorInfo);
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
     }
 }
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
     saveDoctorInfo: saveDoctorInfo,
+    getDoctorById: getDoctorById,
 }

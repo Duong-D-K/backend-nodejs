@@ -44,7 +44,6 @@ let getAllDoctors = () => {
         }
     })
 }
-
 let saveDoctorInfo = (inputData) => {
     return new Promise(async (resovle, reject) => {
         try {
@@ -72,8 +71,38 @@ let saveDoctorInfo = (inputData) => {
     })
 }
 
+let getDoctorById = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                let doctorInfo = await db.User.findOne({
+                    where: { id: id },
+                    attributes: { exclude: ["password", "image"] },
+                    include: [
+                        { model: db.Markdown, attributes: ["description", "contentMarkdown", "contentHTML"] },
+                        { model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"] },
+                    ],
+                    raw: true,
+                    nest: true,
+                });
+                resolve({
+                    code: 0,
+                    data: doctorInfo,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
     saveDoctorInfo: saveDoctorInfo,
+    getDoctorById: getDoctorById,
 }
