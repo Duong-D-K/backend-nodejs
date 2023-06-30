@@ -80,19 +80,24 @@ let getDoctorById = (id) => {
                     message: "Missing required parameter!!",
                 });
             } else {
-                let doctorInfo = await db.User.findOne({
+                let data = await db.User.findOne({
                     where: { id: id },
-                    attributes: { exclude: ["password", "image"] },
+                    attributes: { exclude: ["password"] },
                     include: [
                         { model: db.Markdown, attributes: ["description", "contentMarkdown", "contentHTML"] },
                         { model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"] },
                     ],
-                    raw: true,
+                    raw: false,
                     nest: true,
                 });
+
+                if (data && data.image) {//change image to base 64
+                    data.image = new Buffer(data.image, "base64").toString("binary");
+                }
+
                 resolve({
                     code: 0,
-                    data: doctorInfo,
+                    data: data ? data : {},
                 });
             }
         } catch (e) {

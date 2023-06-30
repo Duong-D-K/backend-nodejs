@@ -50,9 +50,7 @@ let saveDoctorInfo = async (req, res) => {
 
 let getDoctorById = async (req, res) => {
     try {
-        let doctorInfo = await doctorService.getDoctorById(req.query.id);
-
-        return res.status(200).json(doctorInfo);
+        return res.status(200).json(await doctorService.getDoctorById(req.query.id));
     } catch (e) {
         console.log(e);
 
