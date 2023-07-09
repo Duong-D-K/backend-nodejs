@@ -47,30 +47,49 @@ let getAllDoctors = () => {
 let saveDoctorInfo = (inputData) => {
     return new Promise(async (resovle, reject) => {
         try {
-            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown) {
+            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown || !inputData.action) {
                 resovle({
                     code: 1,
                     message: "Missing Parameter",
                 })
             } else {
-                await db.Markdown.create({
-                    contentHTML: inputData.contentHTML,
-                    contentMarkdown: inputData.contentMarkdown,
-                    description: inputData.description,
-                    doctorId: inputData.doctorId,
-                });
+                if (inputData.action === "CREATE") {
+                    await db.Markdown.create({
+                        contentHTML: inputData.contentHTML,
+                        contentMarkdown: inputData.contentMarkdown,
+                        description: inputData.description,
+                        doctorId: inputData.doctorId,
+                    });
 
-                resovle({
-                    code: 0,
-                    message: "Save Doctor Information Successfully!",
-                })
+                    resovle({
+                        code: 0,
+                        message: "Save Doctor Successfully!",
+                    })
+                } else if (inputData.action === "UPDATE") {
+                    let markdown = await db.Markdown.findOne({
+                        where: { doctorId: inputData.doctorId },
+                        raw: false,
+                    });
+
+                    if (markdown) {
+                        markdown.contentHTML = inputData.contentHTML;
+                        markdown.contentMarkdown = inputData.contentMarkdown;
+                        markdown.description = inputData.description;
+                    }
+
+                    await markdown.save();
+
+                    resovle({
+                        code: 0,
+                        message: "Update Doctor Successfully!",
+                    });
+                }
             }
         } catch (e) {
             reject(e);
         }
     })
 }
-
 let getDoctorById = (id) => {
     return new Promise(async (resolve, reject) => {
         try {
