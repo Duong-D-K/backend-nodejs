@@ -1,10 +1,10 @@
-import { where } from "sequelize";
+import { Model, where } from "sequelize";
 import db from "../models/index";
 import bcrypt from "bcryptjs";
 
 const salt = bcrypt.genSaltSync(10);
 
-let HashUserPassword = (password) => {
+let hashPassword = (password) => {
     return new Promise(async (resolve, reject) => {
         try {
             let hashPassword = await bcrypt.hashSync(password, salt);
@@ -77,13 +77,25 @@ let getAllUsers = (userId) => {
             let users = "";
             if (userId == "ALL") {
                 users = await db.User.findAll({
-                    attributes: { exclude: ["password"] },
+                    attributes: { exclude: ["password", "gender", "positionId", "roleId"] },
+                    include: [
+                        { model: db.Allcode, as: "genderData", attributes: ["valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "roleData", attributes: ["valueEn", "valueVi"] },
+                    ],
+                    raw: false,
+                    nest: true,
                 });
             }
             if (userId && userId !== "ALL") {
                 users = await db.User.findOne({
                     where: { id: userId },
                     attributes: { exclude: ["password"] },
+                    include: [
+                        { model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"] },
+                    ],
+                    raw: false,
+                    nest: true,
                 });
             }
             resolve(users);
@@ -105,7 +117,7 @@ let createNewUser = (data) => {
             } else {
                 await db.User.create({
                     email: data.email,
-                    password: await HashUserPassword(data.password),
+                    password: await hashPassword(data.password),
                     firstName: data.firstName,
                     lastName: data.lastName,
                     address: data.address,

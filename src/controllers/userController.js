@@ -21,7 +21,7 @@ let handleLogin = async (req, res) => {
 };
 
 let handleGetAllUsers = async (req, res) => {
-    let id = req.query.id; //ALL. SINGLE
+    let id = req.query.id;
 
     if (!id) {
         return res.status(200).json({
@@ -38,8 +38,6 @@ let handleGetAllUsers = async (req, res) => {
         message: "OK",
         users,
     });
-
-    console.log(users);
 };
 
 let handleCreateNewUser = async (req, res) => {
