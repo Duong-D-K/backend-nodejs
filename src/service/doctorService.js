@@ -1,6 +1,7 @@
-import { where } from "sequelize";
 import db from "../models/index";
-import bcrypt from "bcryptjs";
+require('dotenv').config();
+import _ from "lodash";
+
 
 let getTopDoctorHome = (limit) => {
     return new Promise(async (resolve, reject) => {
@@ -27,6 +28,7 @@ let getTopDoctorHome = (limit) => {
         }
     });
 }
+
 let getAllDoctors = () => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -44,6 +46,7 @@ let getAllDoctors = () => {
         }
     })
 }
+
 let saveDoctorInfo = (inputData) => {
     return new Promise(async (resovle, reject) => {
         try {
@@ -90,6 +93,7 @@ let saveDoctorInfo = (inputData) => {
         }
     })
 }
+
 let getDoctorById = (id) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -124,9 +128,66 @@ let getDoctorById = (id) => {
         }
     })
 }
+
+let bulkCreateSchedule = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.arrSchedule || !data.doctorId || !data.formattedDate) {
+                resolve({
+                    code: 1,
+                    message: "Missing Parameter!",
+                })
+            } else {
+                let schedule = data.arrSchedule;
+
+                if (schedule && schedule.length > 0) {
+                    schedule = schedule.map(item => {
+                        item.maxNumber = process.env.MAX_NUMBER_SCHEDULE;
+
+                        return item;
+                    })
+                }
+                // get all existing data
+                let existing = await db.Schedule.findAll({
+                    where: { doctorId: data.doctorId, date: data.formattedDate },
+                    attributes: ["timeType", "date", "doctorId", "maxNumber"],
+                    raw: true,
+                })
+
+                if (existing && existing.length > 0) {
+                    existing = existing.map(item => {
+                        item.date = new Date(item.date).getTime();
+
+                        return item;
+                    })
+                }
+
+                //compare diffrence
+                let toCreate = _.differenceWith(schedule, existing, (a, b) => {
+                    return a.timeType === b.timeType && a.date === b.date;
+                })
+
+                //create data
+                if (toCreate && toCreate.length > 0) {
+                    await db.Schedule.bulkCreate(schedule);
+                }
+
+
+                resolve({
+                    code: 0,
+                    message: "Create Schedule Successfully!",
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
     saveDoctorInfo: saveDoctorInfo,
     getDoctorById: getDoctorById,
+    bulkCreateSchedule: bulkCreateSchedule,
 }
