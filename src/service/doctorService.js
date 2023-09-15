@@ -144,6 +144,8 @@ let bulkCreateSchedule = (data) => {
                     schedule = schedule.map(item => {
                         item.maxNumber = process.env.MAX_NUMBER_SCHEDULE;
 
+                        item.date = item.date.toString();
+
                         return item;
                     })
                 }
@@ -154,14 +156,6 @@ let bulkCreateSchedule = (data) => {
                     raw: true,
                 })
 
-                if (existing && existing.length > 0) {
-                    existing = existing.map(item => {
-                        item.date = new Date(item.date).getTime();
-
-                        return item;
-                    })
-                }
-
                 //compare diffrence
                 let toCreate = _.differenceWith(schedule, existing, (a, b) => {
                     return a.timeType === b.timeType && a.date === b.date;
@@ -169,7 +163,7 @@ let bulkCreateSchedule = (data) => {
 
                 //create data
                 if (toCreate && toCreate.length > 0) {
-                    await db.Schedule.bulkCreate(schedule);
+                    await db.Schedule.bulkCreate(toCreate);
                 }
 
 
@@ -184,10 +178,38 @@ let bulkCreateSchedule = (data) => {
     });
 }
 
+let getScheduleByDate = (doctorId, date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId || !date) {
+                resolve({
+                    code: 1,
+                    message: "Missing Parameter!",
+                })
+            } else {
+                let data = await db.Schedule.findAll({
+                    where: {
+                        doctorId: doctorId, date: date,
+                    }
+                })
+
+                if (!data) data = [];
+
+                resolve({
+                    code: 0,
+                    data: data,
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
     saveDoctorInfo: saveDoctorInfo,
     getDoctorById: getDoctorById,
     bulkCreateSchedule: bulkCreateSchedule,
+    getScheduleByDate: getScheduleByDate,
 }
