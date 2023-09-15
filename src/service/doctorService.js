@@ -144,7 +144,7 @@ let bulkCreateSchedule = (data) => {
                     schedule = schedule.map(item => {
                         item.maxNumber = process.env.MAX_NUMBER_SCHEDULE;
 
-                        item.date = item.date.toString();
+                        // item.date = item.date.toString();
 
                         return item;
                     })
@@ -158,7 +158,7 @@ let bulkCreateSchedule = (data) => {
 
                 //compare diffrence
                 let toCreate = _.differenceWith(schedule, existing, (a, b) => {
-                    return a.timeType === b.timeType && a.date === b.date;
+                    return a.timeType === b.timeType && a.date.toString() === b.date;
                 })
 
                 //create data
@@ -190,7 +190,12 @@ let getScheduleByDate = (doctorId, date) => {
                 let data = await db.Schedule.findAll({
                     where: {
                         doctorId: doctorId, date: date,
-                    }
+                    },
+                    include: [
+                        { model: db.Allcode, as: "timeTypeData", attributes: ["valueEn", "valueVi"] },
+                    ],
+                    raw: true,
+                    nest: true,
                 })
 
                 if (!data) data = [];

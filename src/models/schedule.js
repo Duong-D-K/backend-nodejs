@@ -2,13 +2,11 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class Schedule extends Model {
-        /**
-         * Helper method for defining associations.
-         * This method is not a part of Sequelize lifecycle.
-         * The `models/index` file will call this method automatically.
-         */
         static associate(models) {
             // define association here
+            Schedule.belongsTo(models.Allcode, { foreignKey: "timeType", targetKey: "keyMap", as: "timeTypeData" });
+            //Khi front-end muốn lấy trường 'timeType', sẽ map tới trường 'keyMap' trong bảng 'AllCode'
+            //và khi trả lại data bên bảng Allcode dưới tên là 'timeTypeData'
         }
     }
     Schedule.init(
