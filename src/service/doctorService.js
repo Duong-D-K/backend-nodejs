@@ -2,7 +2,6 @@ import db from "../models/index";
 require('dotenv').config();
 import _ from "lodash";
 
-
 let getTopDoctorHome = (limit) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -50,7 +49,9 @@ let getAllDoctors = () => {
 let saveDoctorInfo = (inputData) => {
     return new Promise(async (resovle, reject) => {
         try {
-            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown || !inputData.action) {
+            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown || !inputData.action
+                || !inputData.selectedPrice || !inputData.selectedPayment || !inputData.selectedProvince
+                || !inputData.clinicName || !inputData.clinicAddress || !inputData.note) {
                 resovle({
                     code: 1,
                     message: "Missing Parameter",
@@ -86,6 +87,38 @@ let saveDoctorInfo = (inputData) => {
                         code: 0,
                         message: "Update Doctor Successfully!",
                     });
+                }
+
+                console.log("check", inputData);
+
+                let doctorInfo = await db.Doctor_Information.findOne({
+                    where: { doctorId: inputData.doctorId },
+                    raw: false,
+                })
+
+                if (doctorInfo) {
+                    //update
+                    doctorInfo.priceId = inputData.selectedPrice;
+                    doctorInfo.paymentId = inputData.selectedPayment;
+                    doctorInfo.provinceId = inputData.selectedProvince;
+
+                    doctorInfo.clinicName = inputData.clinicName;
+                    doctorInfo.clinicAddress = inputData.clinicAddress;
+                    doctorInfo.note = inputData.note;
+
+                    await doctorInfo.save();
+                } else {
+                    //create
+                    await db.Doctor_Information.create({
+                        doctorId: inputData.doctorId,
+                        priceId: inputData.selectedPrice,
+                        paymentId: inputData.selectedPayment,
+                        provinceId: inputData.selectedProvince,
+
+                        clinicName: inputData.clinicName,
+                        clinicAddress: inputData.clinicAddress,
+                        note: inputData.note,
+                    })
                 }
             }
         } catch (e) {

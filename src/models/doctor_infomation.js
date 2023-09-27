@@ -13,12 +13,15 @@ module.exports = (sequelize, DataTypes) => {
             provinceId: DataTypes.STRING,
             paymentId: DataTypes.STRING,
 
+            clinicName: DataTypes.STRING,
+            clinicAddress: DataTypes.STRING,
             note: DataTypes.STRING,
             count: DataTypes.INTEGER,
         },
         {
             sequelize,
             modelName: "Doctor_Information",
+            freezeTableName: true,//thông thường table trong php mysql phải thêm s ở cuối, nếu thêm thuộc tính này có thể đặt tên tùy ý
         }
     );
     return Doctor_Information;
