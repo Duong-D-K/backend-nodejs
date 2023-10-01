@@ -3,6 +3,12 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class Doctor_Information extends Model {
         static associate(models) {
+            Doctor_Information.belongsTo(models.User, { foreignKey: "doctorId" });
+
+            Doctor_Information.belongsTo(models.Allcode, { foreignKey: "priceId", targetKey: "keyMap", as: "priceData" });
+            Doctor_Information.belongsTo(models.Allcode, { foreignKey: "paymentId", targetKey: "keyMap", as: "paymentData" });
+            Doctor_Information.belongsTo(models.Allcode, { foreignKey: "provinceId", targetKey: "keyMap", as: "provinceData" });
+
         }
     }
 
@@ -21,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             sequelize,
             modelName: "Doctor_Information",
-            freezeTableName: true,//thông thường table trong php mysql phải thêm s ở cuối, nếu thêm thuộc tính này có thể đặt tên tùy ý
+            //freezeTableName: true,//thông thường table trong php mysql phải thêm s ở cuối, nếu thêm thuộc tính này có thể đặt tên tùy ý
         }
     );
     return Doctor_Information;

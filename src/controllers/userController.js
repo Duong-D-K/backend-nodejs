@@ -21,23 +21,16 @@ let handleLogin = async (req, res) => {
 };
 
 let handleGetAllUsers = async (req, res) => {
-    let id = req.query.id;
+    try {
+        return res.status(200).json(await userService.getAllUsers());
+    } catch (e) {
+        console.log(e);
 
-    if (!id) {
         return res.status(200).json({
-            code: 1,
-            message: "Missing Required Parameters",
-            users: [],
-        });
+            code: -1,
+            message: "Error Code From Server!",
+        })
     }
-
-    let users = await userService.getAllUsers(id);
-
-    return res.status(200).json({
-        code: 0,
-        message: "OK",
-        users,
-    });
 };
 
 let handleCreateNewUser = async (req, res) => {

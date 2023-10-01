@@ -89,8 +89,6 @@ let saveDoctorInfo = (inputData) => {
                     });
                 }
 
-                console.log("check", inputData);
-
                 let doctorInfo = await db.Doctor_Information.findOne({
                     where: { doctorId: inputData.doctorId },
                     raw: false,
@@ -140,8 +138,24 @@ let getDoctorById = (id) => {
                     where: { id: id },
                     attributes: { exclude: ["password"] },
                     include: [
-                        { model: db.Markdown, attributes: ["description", "contentMarkdown", "contentHTML"] },
-                        { model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"] },
+                        {
+                            model: db.Markdown,
+                            attributes: ["description", "contentMarkdown", "contentHTML"],
+                        },
+                        {
+                            model: db.Allcode,
+                            as: "positionData", attributes: ["valueEn", "valueVi"],
+                        },
+                        {
+                            model: db.Doctor_Information,
+                            attributes: { exclude: ["id", "doctorId", "createdAt", "updatedAt"] },
+                            include: [
+                                { model: db.Allcode, as: "priceData", attributes: ["valueEn", "valueVi"] },
+                                { model: db.Allcode, as: "paymentData", attributes: ["valueEn", "valueVi"] },
+                                { model: db.Allcode, as: "provinceData", attributes: ["valueEn", "valueVi"] },
+
+                            ]
+                        },
                     ],
                     raw: false,
                     nest: true,
