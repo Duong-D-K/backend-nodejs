@@ -51,7 +51,7 @@ let saveDoctorInfo = (inputData) => {
         try {
             if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown || !inputData.action
                 || !inputData.selectedPrice || !inputData.selectedPayment || !inputData.selectedProvince
-                || !inputData.clinicName || !inputData.clinicAddress || !inputData.note) {
+                || !inputData.clinicName || !inputData.clinicAddress) {
                 resovle({
                     code: 1,
                     message: "Missing Parameter",
@@ -257,6 +257,39 @@ let getScheduleByDate = (doctorId, date) => {
         }
     });
 }
+
+let getDoctorInformationById = (doctorId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                let data = await db.Doctor_Information.findOne({
+                    where: { doctorId: doctorId },
+                    attributes: { exclude: ["id", "doctorId", "createdAt", "updatedAt"] },
+                    include: [
+                        { model: db.Allcode, as: "priceData", attributes: ["valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "paymentData", attributes: ["valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "provinceData", attributes: ["valueEn", "valueVi"] },
+                    ],
+                    raw: false,
+                    nest: true,
+                });
+
+                resolve({
+                    code: 0,
+                    data: data ? data : {},
+                });
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -264,4 +297,5 @@ module.exports = {
     getDoctorById: getDoctorById,
     bulkCreateSchedule: bulkCreateSchedule,
     getScheduleByDate: getScheduleByDate,
+    getDoctorInformationById: getDoctorInformationById,
 }
