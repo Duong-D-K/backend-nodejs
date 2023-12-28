@@ -136,7 +136,7 @@ let getDoctorById = (id) => {
             } else {
                 let data = await db.User.findOne({
                     where: { id: id },
-                    attributes: { exclude: ["password"] },
+                    attributes: { exclude: ["password", "createdAt", "updatedAt", "positionId", "roleId"] },
                     include: [
                         {
                             model: db.Markdown,
@@ -148,7 +148,7 @@ let getDoctorById = (id) => {
                         },
                         {
                             model: db.Doctor_Information,
-                            attributes: { exclude: ["id", "doctorId", "createdAt", "updatedAt"] },
+                            attributes: { exclude: ["id", "doctorId", "createdAt", "updatedAt", "priceId", "paymentId", "provinceId"] },
                             include: [
                                 { model: db.Allcode, as: "priceData", attributes: ["valueEn", "valueVi"] },
                                 { model: db.Allcode, as: "paymentData", attributes: ["valueEn", "valueVi"] },
@@ -283,7 +283,6 @@ let getDoctorInformationById = (doctorId) => {
                     code: 0,
                     data: data ? data : {},
                 });
-
             }
         } catch (e) {
             reject(e);
