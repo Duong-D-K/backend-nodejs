@@ -16,10 +16,11 @@
 lệnh start server: npm start
 lệnh tắt server : ctrl + c
 lệnh chạy sequelize: npx sequelize-cli db:migrate
+
 lệnh thay đổi table trong sequelize:
 B1: trước hết phải xóa bảng cũ cùng với hàng ở trong sequelizemata
 B2:Thay đổi thuộc tính bên trong folder 'model' và 'migration'
-B3: Sử dụng câu lệnh :npx sequelize-cli db:migrate --to 'tên table ở trong folder 'model''
+B3: Sử dụng câu lệnh :npx sequelize-cli db:migrate
 
 câu lệnh đưa project lên git
 trước hết phải tạo repository ở trên web trước
