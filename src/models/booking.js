@@ -2,14 +2,7 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class Booking extends Model {
-        /**
-         * Helper method for defining associations.
-         * This method is not a part of Sequelize lifecycle.
-         * The `models/index` file will call this method automatically.
-         */
         static associate(models) {
-            //định danh các mối quan hệ như 1-1, 1-n, n-1
-            // define association here
         }
     }
     Booking.init(
@@ -19,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
             patientId: DataTypes.INTEGER,
             date: DataTypes.STRING,
             timeType: DataTypes.STRING,
+            reason: DataTypes.STRING,
         },
         {
             sequelize,

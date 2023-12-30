@@ -5,13 +5,17 @@ import _ from "lodash";
 let appointmentBooking = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.email || !data.doctorId || !data.timeType || !data.date) {
+            const requiredFields = ['fullName', 'phoneNumber', 'email', 'address', 'reason', 'birthday', 'selectedGender', 'doctorId', 'timeType'];
+
+            if (requiredFields.some(field => !data[field])) {
+                // 'some' method is used to check if at least one required field is missing
+                // It returns true if any of the conditions is true
                 resolve({
                     code: 1,
                     message: "Missing required parameter!!",
                 });
             } else {
-                let [user, created] = await db.User.findOrCreate({
+                let [user,] = await db.User.findOrCreate({
                     where: { email: data.email },
                     defaults: {
                         email: data.email,
@@ -20,7 +24,7 @@ let appointmentBooking = (data) => {
                 });
 
                 if (user) {
-                    let [, result] = await db.Booking.findOrCreate({
+                    let [, created] = await db.Booking.findOrCreate({
                         where: {
                             timeType: data.timeType,
                             doctorId: data.doctorId,
@@ -29,12 +33,13 @@ let appointmentBooking = (data) => {
                             statusId: "S1",
                             doctorId: data.doctorId,
                             patientId: user.id,
-                            date: data.date,
+                            date: String(data.birthday),
                             timeType: data.timeType,
+                            reason: data.reason,
                         }
                     });
 
-                    if (result === true) {
+                    if (created === true) {
                         resolve({
                             code: 0,
                             message: 'Booking Appointment Successfully!',
@@ -46,7 +51,6 @@ let appointmentBooking = (data) => {
                         })
                     }
                 }
-
             }
         } catch (e) {
             reject(e);
