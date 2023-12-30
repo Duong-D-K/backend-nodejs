@@ -1,17 +1,42 @@
 import db from "../models/index";
 require('dotenv').config();
 import _ from "lodash";
+import emailService from "./emailService";
 
 let appointmentBooking = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.email || !data.doctorId || !data.timeType || !data.date) {
+            console.log("data", data);
+
+            const requiredFields = [
+                'fullName',
+                'phoneNumber',
+                'email',
+                'address',
+                'reason',
+                'birthday',
+                'selectedGender',
+                'doctorId',
+                'appointmentTime'];
+
+            if (requiredFields.some(field => !data[field])) {
+                // 'some' method is used to check if at least one required field is missing
+                // It returns true if any of the conditions is true
                 resolve({
                     code: 1,
                     message: "Missing required parameter!!",
                 });
             } else {
-                let [user, created] = await db.User.findOrCreate({
+                await emailService.sendSimpleEmail({
+                    receivedFullName: data.fullName,
+                    receivedEmail: data.email,
+                    receivedTime: data.timeString,
+                    receivedDoctorName: data.doctorString,
+                    receivedRedirectLink: "https://www.msn.com/en-us/money/markets/china-fires-back-at-u-s-sanctions/ar-AA1mc3kH?ocid=msedgntp&cvid=cf28241c1a554e48bd5db4f3352e1fe0&ei=7",
+                    receivedLanguage: data.language,
+                });
+
+                let [user,] = await db.User.findOrCreate({
                     where: { email: data.email },
                     defaults: {
                         email: data.email,
@@ -20,21 +45,22 @@ let appointmentBooking = (data) => {
                 });
 
                 if (user) {
-                    let [, result] = await db.Booking.findOrCreate({
+                    let [, created] = await db.Booking.findOrCreate({
                         where: {
-                            timeType: data.timeType,
+                            appointmentTime: data.appointmentTime,
                             doctorId: data.doctorId,
                         },
                         defaults: {
                             statusId: "S1",
                             doctorId: data.doctorId,
                             patientId: user.id,
-                            date: data.date,
-                            timeType: data.timeType,
+                            appointmentDate: data.appointmentDate,
+                            appointmentTime: data.appointmentTime,
+                            reason: data.reason,
                         }
                     });
 
-                    if (result === true) {
+                    if (created === true) {
                         resolve({
                             code: 0,
                             message: 'Booking Appointment Successfully!',
@@ -46,7 +72,6 @@ let appointmentBooking = (data) => {
                         })
                     }
                 }
-
             }
         } catch (e) {
             reject(e);
