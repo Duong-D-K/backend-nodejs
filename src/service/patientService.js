@@ -6,8 +6,6 @@ import emailService from "./emailService";
 let appointmentBooking = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log("data", data);
-
             const requiredFields = [
                 'fullName',
                 'phoneNumber',
