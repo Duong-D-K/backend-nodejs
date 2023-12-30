@@ -13,9 +13,9 @@ let appointmentBooking = async (req, res) => {
     }
 }
 
-let appointmentVerify = async (req, res) => {
+let examinationVerification = async (req, res) => {
     try {
-        return res.status(200).json(await patientService.appointmentVerify(req.body));
+        return res.status(200).json(await patientService.examinationVerification(req.body));
     } catch (e) {
         console.log(e);
 
@@ -28,5 +28,5 @@ let appointmentVerify = async (req, res) => {
 
 module.exports = {
     appointmentBooking: appointmentBooking,
-    appointmentVerify: appointmentVerify
+    examinationVerification: examinationVerification
 }

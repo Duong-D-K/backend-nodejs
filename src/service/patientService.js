@@ -72,7 +72,7 @@ let appointmentBooking = (data) => {
                             receivedEmail: data.email,
                             receivedTime: data.timeString,
                             receivedDoctorName: data.doctorString,
-                            receivedRedirectLink: `${process.env.URL_REACT}/verify-booking?token=${token}&doctorId=${data.doctorId}&patientId=${user.id}`,
+                            receivedRedirectLink: `${process.env.URL_REACT}/examination-verification?token=${token}&doctorId=${data.doctorId}&patientId=${user.id}`,
 
                             receivedLanguage: data.language,
                         });
@@ -95,7 +95,7 @@ let appointmentBooking = (data) => {
     })
 }
 
-let appointmentVerify = (data) => {
+let examinationVerification = (data) => {
     return new Promise(async (resolve, reject) => {
         console.log("data", data);
         try {
@@ -123,12 +123,12 @@ let appointmentVerify = (data) => {
 
                     resolve({
                         code: 0,
-                        message: "Verify Appointment Successful!"
+                        message: "Verify Examination Successful!"
                     })
                 } else {
                     resolve({
                         code: 2,
-                        message: "Appointment hasn't been activated of doesn't exsit!"
+                        message: "Examination hasn't been activated or doesn't exsit!"
                     })
                 }
             }
@@ -139,5 +139,5 @@ let appointmentVerify = (data) => {
 }
 module.exports = {
     appointmentBooking: appointmentBooking,
-    appointmentVerify: appointmentVerify,
+    examinationVerification: examinationVerification,
 }
