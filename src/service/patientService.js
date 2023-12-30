@@ -2,11 +2,12 @@ import db from "../models/index";
 require('dotenv').config();
 import _ from "lodash";
 import emailService from "./emailService";
+import { v4 as uuidv4 } from 'uuid';
 
 let appointmentBooking = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const requiredFields = [
+            let requiredFields = [
                 'fullName',
                 'phoneNumber',
                 'email',
@@ -15,7 +16,12 @@ let appointmentBooking = (data) => {
                 'birthday',
                 'selectedGender',
                 'doctorId',
-                'appointmentTime'];
+                'appointmentTime',
+                'language',
+                'appointmentDate',
+                'timeString',
+                'doctorString',
+            ];
 
             if (requiredFields.some(field => !data[field])) {
                 // 'some' method is used to check if at least one required field is missing
@@ -25,28 +31,29 @@ let appointmentBooking = (data) => {
                     message: "Missing required parameter!!",
                 });
             } else {
-                await emailService.sendSimpleEmail({
-                    receivedFullName: data.fullName,
-                    receivedEmail: data.email,
-                    receivedTime: data.timeString,
-                    receivedDoctorName: data.doctorString,
-                    receivedRedirectLink: "https://www.msn.com/en-us/money/markets/china-fires-back-at-u-s-sanctions/ar-AA1mc3kH?ocid=msedgntp&cvid=cf28241c1a554e48bd5db4f3352e1fe0&ei=7",
-                    receivedLanguage: data.language,
-                });
+                let token = uuidv4();
 
-                let [user,] = await db.User.findOrCreate({
+                let [user,] = await db.Patient.findOrCreate({
                     where: { email: data.email },
                     defaults: {
                         email: data.email,
-                        roleId: "R3",
+                        password: "",
+                        fullName: data.fullName,
+                        address: data.address,
+                        phoneNumber: data.phoneNumber,
+                        gender: data.selectedGender,
+                        image: "",
+                        birthday: data.birthday,
+                        active: false,
                     }
                 });
 
                 if (user) {
                     let [, created] = await db.Booking.findOrCreate({
                         where: {
-                            appointmentTime: data.appointmentTime,
+                            appointmentDate: data.appointmentDate,
                             doctorId: data.doctorId,
+                            patientId: user.id,
                         },
                         defaults: {
                             statusId: "S1",
@@ -55,10 +62,21 @@ let appointmentBooking = (data) => {
                             appointmentDate: data.appointmentDate,
                             appointmentTime: data.appointmentTime,
                             reason: data.reason,
+                            token: token,
                         }
                     });
 
                     if (created === true) {
+                        await emailService.sendSimpleEmail({
+                            receivedFullName: data.fullName,
+                            receivedEmail: data.email,
+                            receivedTime: data.timeString,
+                            receivedDoctorName: data.doctorString,
+                            receivedRedirectLink: `${process.env.URL_REACT}/verify-booking?token=${token}&doctorId=${data.doctorId}&patientId=${user.id}`,
+
+                            receivedLanguage: data.language,
+                        });
+
                         resolve({
                             code: 0,
                             message: 'Booking Appointment Successfully!',
@@ -66,7 +84,7 @@ let appointmentBooking = (data) => {
                     } else {
                         resolve({
                             code: 2,
-                            message: 'Booking Unsuccessfully!',
+                            message: 'Vui Lòng Thay Đổi Bác Sĩ Hoặc Chọn Ngày Khác!',
                         })
                     }
                 }
@@ -77,6 +95,49 @@ let appointmentBooking = (data) => {
     })
 }
 
+let appointmentVerify = (data) => {
+    return new Promise(async (resolve, reject) => {
+        console.log("data", data);
+        try {
+            let requiredFields = ["token", "doctorId", "patientId"];
+
+            if (requiredFields.some(field => !data[field])) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                let appointment = await db.Booking.findOne({
+                    where: {
+                        token: data.token,
+                        doctorId: data.doctorId,
+                        patientId: data.patientId,
+                        statusId: "S1"
+                    },
+                    raw: false,
+                });
+
+                if (appointment) {
+                    appointment.statusId = "S2";
+                    await appointment.save();
+
+                    resolve({
+                        code: 0,
+                        message: "Verify Appointment Successful!"
+                    })
+                } else {
+                    resolve({
+                        code: 2,
+                        message: "Appointment hasn't been activated of doesn't exsit!"
+                    })
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 module.exports = {
     appointmentBooking: appointmentBooking,
+    appointmentVerify: appointmentVerify,
 }
