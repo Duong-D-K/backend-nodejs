@@ -87,7 +87,7 @@ let getAllUsers = () => {
 
             resolve({
                 code: 0,
-                data: users,
+                data: users?.length > 0 ? users : "",
             });
         } catch (error) {
             reject(error);

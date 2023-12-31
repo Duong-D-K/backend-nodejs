@@ -13,9 +13,9 @@ let createSpecialty = async (req, res) => {
     }
 }
 
-let examinationVerification = async (req, res) => {
+let getAllSpecialties = async (req, res) => {
     try {
-        return res.status(200).json(await patientService.examinationVerification(req.body));
+        return res.status(200).json(await specialtyService.getAllSpecialties());
     } catch (e) {
         console.log(e);
 
@@ -25,7 +25,8 @@ let examinationVerification = async (req, res) => {
         });
     }
 }
-
 module.exports = {
     createSpecialty: createSpecialty,
+    getAllSpecialties: getAllSpecialties
+
 }
