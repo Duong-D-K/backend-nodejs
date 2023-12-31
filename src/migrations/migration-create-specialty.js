@@ -3,11 +3,6 @@
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.createTable("specialties", {
-            // currentNumber: DataTypes.INTEGER,
-            // maxNumber: DataTypes.INTEGER,
-            // date: DataTypes.DATE,
-            // timeType: DataTypes.STRING,
-            // doctorId: DataTypes.STRING,
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -17,11 +12,16 @@ module.exports = {
             name: {
                 type: Sequelize.STRING,
             },
-            description: {
-                type: Sequelize.TEXT,
-            },
             image: {
-                type: Sequelize.STRING,
+                type: Sequelize.BLOB("long"),
+            },
+            contentHTML: {
+                allowNull: true,
+                type: Sequelize.TEXT("long"),
+            },
+            contentMarkdown: {
+                allowNull: true,
+                type: Sequelize.TEXT("long"),
             },
 
             createdAt: {
