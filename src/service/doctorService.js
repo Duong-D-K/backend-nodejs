@@ -49,12 +49,13 @@ let getAllDoctors = () => {
 let saveDoctorInfo = (inputData) => {
     return new Promise(async (resovle, reject) => {
         try {
-            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown || !inputData.action
-                || !inputData.selectedPrice || !inputData.selectedPayment || !inputData.selectedProvince
-                || !inputData.clinicName || !inputData.clinicAddress) {
+            let requiredFields = ["doctorId", "contentHTML", "contentMarkdown", "action", "selectedPrice", "selectedPayment", "selectedProvince", "clinicName", "clinicAddress", "description", "note", "clinicId", "specialtyId",];
+
+            if (requiredFields.some(field => !inputData[field])) {
+                let missingField = requiredFields.find(field => !inputData[field]);
                 resovle({
                     code: 1,
-                    message: "Missing Parameter",
+                    message: `Missing Parameter: ${missingField}`,
                 })
             } else {
                 if (inputData.action === "CREATE") {
@@ -103,6 +104,8 @@ let saveDoctorInfo = (inputData) => {
                     doctorInfo.clinicName = inputData.clinicName;
                     doctorInfo.clinicAddress = inputData.clinicAddress;
                     doctorInfo.note = inputData.note;
+                    doctorInfo.specialtyId = inputData.specialtyId;
+                    doctorInfo.clinicId = inputData.clinicId;
 
                     await doctorInfo.save();
                 } else {
@@ -112,6 +115,8 @@ let saveDoctorInfo = (inputData) => {
                         priceId: inputData.selectedPrice,
                         paymentId: inputData.selectedPayment,
                         provinceId: inputData.selectedProvince,
+                        specialtyId: inputData.specialtyId,
+                        clinicId: inputData.clinicId,
 
                         clinicName: inputData.clinicName,
                         clinicAddress: inputData.clinicAddress,
@@ -153,7 +158,7 @@ let getDoctorById = (id) => {
                                 { model: db.Allcode, as: "priceData", attributes: ["valueEn", "valueVi"] },
                                 { model: db.Allcode, as: "paymentData", attributes: ["valueEn", "valueVi"] },
                                 { model: db.Allcode, as: "provinceData", attributes: ["valueEn", "valueVi"] },
-
+                                { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
                             ]
                         },
                     ],

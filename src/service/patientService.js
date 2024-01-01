@@ -28,7 +28,7 @@ let appointmentBooking = (data) => {
                 // It returns true if any of the conditions is true
                 resolve({
                     code: 1,
-                    message: "Missing required parameter!!",
+                    message: `Missing required parameter: ${requiredFields.find(field => !inputData[field])}`,
                 });
             } else {
                 let token = uuidv4();
