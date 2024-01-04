@@ -28,7 +28,7 @@ let getAllSpecialties = async (req, res) => {
 
 let getAllDoctorsInSpecialty = async (req, res) => {
     try {
-        return res.status(200).json(await specialtyService.getAllDoctorsInSpecialty(req.query.id));
+        return res.status(200).json(await specialtyService.getAllDoctorsInSpecialty(req.query.id, req.query.location));
     } catch (e) {
         console.log(e);
 

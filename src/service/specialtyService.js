@@ -67,21 +67,42 @@ let getAllSpecialties = () => {
     })
 }
 
-let getAllDoctorsInSpecialty = (id) => {
+let getAllDoctorsInSpecialty = (id, location) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!id) {
+            if (!id || !location) {
                 resolve({
                     code: 1,
                     message: "Missing required parameter!!",
                 });
             } else {
-                let doctors = await db.Doctor_Information.findAll({
-                    where: { specialtyId: id },
-                    attributes: { exclude: [""] },
-                    raw: false,
-                    nest: true,
+                let specialty = await db.Specialty.findOne({
+                    where: { id: id },
+                    attributes: { exclude: ["createdAt", "updatedAt"] },
                 });
+
+                let doctors = [];
+
+                if (location === "ALL") {
+                    doctors = await db.Doctor_Information.findAll({
+                        where: { specialtyId: id },
+                        attributes: { exclude: [""] },
+                        raw: false,
+                        nest: true,
+                    });
+                } else {
+                    //find by location
+                    doctors = await db.Doctor_Information.findAll({
+                        where: {
+                            specialtyId: id,
+                            provinceId: location,
+                        },
+                        attributes: { exclude: [""] },
+                        raw: false,
+                        nest: true,
+                    });
+                }
+
 
                 const updatedDoctors = await Promise.all(doctors.map(async (item, index) => {
                     let markdown = await db.Markdown.findOne({
@@ -119,7 +140,7 @@ let getAllDoctorsInSpecialty = (id) => {
 
                 resolve({
                     code: 0,
-                    data: updatedDoctors ? updatedDoctors : "",
+                    data: updatedDoctors && specialty ? { updatedDoctors: updatedDoctors, specialty: specialty } : "",
                 });
             }
         } catch (e) {
