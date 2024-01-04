@@ -67,7 +67,69 @@ let getAllSpecialties = () => {
     })
 }
 
+let getAllDoctorsInSpecialty = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                let doctors = await db.Doctor_Information.findAll({
+                    where: { specialtyId: id },
+                    attributes: { exclude: [""] },
+                    raw: false,
+                    nest: true,
+                });
+
+                const updatedDoctors = await Promise.all(doctors.map(async (item, index) => {
+                    let markdown = await db.Markdown.findOne({
+                        where: {
+                            doctorId: item.doctorId,
+                        },
+                        attributes: ["description"],
+                        raw: false,
+                        nest: true,
+                    });
+
+                    let user = await db.User.findOne({
+                        where: {
+                            id: item.doctorId,
+                        },
+                        attributes: ["image", "firstName", "lastName"],
+                        include: [
+                            { model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"] },
+                        ],
+                        raw: false,
+                        nest: true,
+                    });
+
+                    if (user && user.image) {//change image to base 64
+                        user.image = new Buffer(user.image, "base64").toString("binary");
+                    }
+
+                    // Thêm giá trị markdown vào mỗi thành phần con của doctors
+                    return {
+                        ...item.toJSON(),
+                        Markdown: markdown ? markdown.get({ plain: true }) : null,
+                        User: user ? user.get({ plain: true }) : null,
+                    };
+                }));
+
+                resolve({
+                    code: 0,
+                    data: updatedDoctors ? updatedDoctors : "",
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     createSpecialty: createSpecialty,
-    getAllSpecialties: getAllSpecialties
+    getAllSpecialties: getAllSpecialties,
+    getAllDoctorsInSpecialty: getAllDoctorsInSpecialty,
 }
