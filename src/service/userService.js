@@ -225,6 +225,56 @@ let getAllCodesService = (typeInput) => {
         }
     });
 }
+
+let getAllProvinces = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let allProvinces = await db.Province.findAll({
+                attributes: { exclude: ["createdAt", "updatedAt"] },
+
+                raw: false,
+                nest: true,
+            });
+
+            resolve({
+                code: 0,
+                data: allProvinces?.length > 0 ? allProvinces : "",
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
+
+let getDistricByProvinceId = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                let districts = await db.District.findAll({
+                    where: { provinceId: id },
+                    attributes: { exclude: ["provinceId", "createdAt", "updatedAt",] },
+
+                    raw: false,
+                    nest: true,
+                });
+
+                resolve({
+                    code: 0,
+                    data: districts?.length > 0 ? districts : {},
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     handleUserLogin: handleUserLogin,
     getAllUsers: getAllUsers,
@@ -232,4 +282,6 @@ module.exports = {
     updateUserData: updateUserData,
     deleteUser: deleteUser,
     getAllCodesService: getAllCodesService,
+    getAllProvinces: getAllProvinces,
+    getDistricByProvinceId: getDistricByProvinceId,
 };

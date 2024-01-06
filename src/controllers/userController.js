@@ -58,6 +58,32 @@ let getAllCodes = async (req, res) => {
     }
 };
 
+let getAllProvinces = async (req, res) => {
+    try {
+        return res.status(200).json(await userService.getAllProvinces());
+    } catch (e) {
+        console.log("Get All Provinces Error: ", e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error From Server",
+        });
+    }
+};
+
+let getDistricByProvinceId = async (req, res) => {
+    try {
+        return res.status(200).json(await userService.getDistricByProvinceId(req.query.provinceId));
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
+    }
+}
+
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
@@ -65,5 +91,6 @@ module.exports = {
     handleEditUser: handleEditUser,
     handleDeleteUser: handleDeleteUser,
     getAllCodes: getAllCodes,
-
+    getAllProvinces: getAllProvinces,
+    getDistricByProvinceId,
 };

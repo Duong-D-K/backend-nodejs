@@ -47,13 +47,13 @@ let getAllDoctors = () => {
 }
 
 let saveDoctorInfo = (inputData) => {
-    return new Promise(async (resovle, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
             let requiredFields = ["doctorId", "contentHTML", "contentMarkdown", "action", "selectedPrice", "selectedPayment", "selectedProvince", "clinicName", "clinicAddress", "description", "note", "clinicId", "specialtyId",];
 
             if (requiredFields.some(field => !inputData[field])) {
                 let missingField = requiredFields.find(field => !inputData[field]);
-                resovle({
+                resolve({
                     code: 1,
                     message: `Missing Parameter: ${missingField}`,
                 })
@@ -66,7 +66,7 @@ let saveDoctorInfo = (inputData) => {
                         doctorId: inputData.doctorId,
                     });
 
-                    resovle({
+                    resolve({
                         code: 0,
                         message: "Save Doctor Successfully!",
                     })
@@ -84,7 +84,7 @@ let saveDoctorInfo = (inputData) => {
 
                     await markdown.save();
 
-                    resovle({
+                    resolve({
                         code: 0,
                         message: "Update Doctor Successfully!",
                     });
