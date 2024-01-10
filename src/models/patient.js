@@ -2,7 +2,11 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class Patient extends Model {
+        static associate(models) {
+            Patient.hasMany(models.Booking, { foreignKey: "patientId" });
 
+            Patient.belongsTo(models.Allcode, { foreignKey: "gender", targetKey: "keyMap" });
+        }
     }
     Patient.init(
         {

@@ -294,6 +294,50 @@ let getDoctorInformationById = (doctorId) => {
         }
     })
 }
+
+let getAllPatientsByDateAndDoctorId = (doctorId, date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId || !date) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                let data = await db.Booking.findAll({
+                    where: {
+                        doctorId: doctorId,
+                        appointmentDate: date,
+                        statusId: "S2"
+                    },
+                    attributes: { exclude: ["createdAt", "updatedAt"] },
+                    include: [
+                        {
+                            model: db.Patient,
+                            attributes: ["email", "fullName", "birthday", "address"],
+                            include: [
+                                {
+                                    model: db.Allcode,
+                                    attributes: ["valueEn", "valueVi"],
+                                },
+                            ],
+                        },
+                    ],
+                    raw: false,
+                    nest: true,
+                });
+
+                resolve({
+                    code: 0,
+                    data: data ? data : {},
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -302,4 +346,5 @@ module.exports = {
     bulkCreateSchedule: bulkCreateSchedule,
     getScheduleByDate: getScheduleByDate,
     getDoctorInformationById: getDoctorInformationById,
+    getAllPatientsByDateAndDoctorId: getAllPatientsByDateAndDoctorId,
 }
