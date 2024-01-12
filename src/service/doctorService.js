@@ -196,28 +196,47 @@ let bulkCreateSchedule = (data) => {
                     schedule = schedule.map(item => {
                         item.maxNumber = process.env.MAX_NUMBER_SCHEDULE;
 
-                        // item.date = item.date.toString();
-
                         return item;
                     })
                 }
                 // get all existing data
                 let existing = await db.Schedule.findAll({
-                    where: { doctorId: data.doctorId, date: data.formattedDate },
+                    where: {
+                        doctorId: data.doctorId,
+                        date: data.formattedDate
+                    },
                     attributes: ["timeType", "date", "doctorId", "maxNumber"],
                     raw: true,
                 })
 
-                //compare diffrence
-                let toCreate = _.differenceWith(schedule, existing, (a, b) => {
-                    return a.timeType === b.timeType && a.date.toString() === b.date;
-                })
+                const bulkCreate = schedule.filter(scheduleItem =>
+                    !existing.some(existingItem =>
+                        existingItem.timeType === scheduleItem.timeType && existingItem.date === scheduleItem.date.toString()
+                    )
+                );
 
-                //create data
-                if (toCreate && toCreate.length > 0) {
-                    await db.Schedule.bulkCreate(toCreate);
+                const bulkDestroy = existing.filter(existingItem =>
+                    !schedule.some(scheduleItem =>
+                        scheduleItem.timeType === existingItem.timeType && scheduleItem.date.toString() === existingItem.date
+                    )
+                );
+
+                if (bulkCreate && bulkCreate.length > 0) {
+                    await db.Schedule.bulkCreate(bulkCreate);
                 }
 
+                if (bulkDestroy && bulkDestroy.length > 0) {
+                    bulkDestroy.forEach(async (item) => {
+                        await db.Schedule.destroy({
+                            where: {
+                                timeType: item.timeType,
+                                date: item.date,
+                                doctorId: item.doctorId,
+                            }
+                        })
+
+                    });
+                }
 
                 resolve({
                     code: 0,
@@ -322,6 +341,11 @@ let getAllPatientsByDateAndDoctorId = (doctorId, date) => {
                                 },
                             ],
                         },
+                        {
+                            model: db.Allcode,
+                            attributes: ["valueEn", "valueVi"],
+                        },
+
                     ],
                     raw: false,
                     nest: true,
@@ -338,6 +362,36 @@ let getAllPatientsByDateAndDoctorId = (doctorId, date) => {
     })
 }
 
+let getAllSchedulesByDateAndDoctorId = (doctorId, date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId || !date) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                let data = await db.Schedule.findAll({
+                    where: {
+                        doctorId: doctorId,
+                        date: date,
+                    },
+                    attributes: { exclude: ["currentNumber", "maxNumber", "createdAt", "updatedAt"] },
+
+                    raw: false,
+                    nest: true,
+                });
+
+                resolve({
+                    code: 0,
+                    data: data ? data : {},
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -347,4 +401,5 @@ module.exports = {
     getScheduleByDate: getScheduleByDate,
     getDoctorInformationById: getDoctorInformationById,
     getAllPatientsByDateAndDoctorId: getAllPatientsByDateAndDoctorId,
+    getAllSchedulesByDateAndDoctorId: getAllSchedulesByDateAndDoctorId,
 }

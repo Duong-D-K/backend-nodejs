@@ -4,6 +4,8 @@ module.exports = (sequelize, DataTypes) => {
     class Booking extends Model {
         static associate(models) {
             Booking.belongsTo(models.Patient, { foreignKey: "patientId", targetKey: "id" });
+
+            Booking.belongsTo(models.Allcode, { foreignKey: "appointmentTime", targetKey: "keyMap" });
         }
     }
     Booking.init(
