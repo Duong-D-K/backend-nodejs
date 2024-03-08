@@ -42,7 +42,7 @@ let handleEditUser = async (req, res) => {
 };
 
 let handleDeleteUser = async (req, res) => {
-    return res.status(200).json(await userService.deleteUser(req.body.id));
+    return res.status(200).json(await userService.deleteUser(req.params.userId));
 };
 
 let getAllCodes = async (req, res) => {

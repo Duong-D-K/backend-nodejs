@@ -1,6 +1,7 @@
 import db from "../models/index";
 require('dotenv').config();
 import _ from "lodash";
+import emailService from "../service/emailService";
 
 let getTopDoctorHome = (limit) => {
     return new Promise(async (resolve, reject) => {
@@ -348,7 +349,7 @@ let getAllPatientsByDateAndDoctorId = (doctorId, date) => {
 
                     ],
                     raw: false,
-                    nest: true,
+                    nest: false,
                 });
 
                 resolve({
@@ -392,6 +393,46 @@ let getAllSchedulesByDateAndDoctorId = (doctorId, date) => {
         }
     })
 }
+
+let sendPrescription = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email || !data.doctorId || !data.patientId || !data.timeType) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                //update booking status
+                let appointment = await db.Booking.findOne({
+                    where: {
+                        doctorId: data.doctorId,
+                        patientId: data.patientId,
+                        appointmentTime: data.timeType,
+                        statusId: "S2",
+                    },
+                    raw: false,
+                })
+
+                if (appointment) {
+                    appointment.statusId = "S3";
+                    await appointment.save();
+                }
+
+                //send prescription mail
+                await emailService.sendAttachment(data);
+
+                resolve({
+                    code: 0,
+                    message: "Gửi đơn thuốc cho bệnh nhân thành công!"
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -402,4 +443,5 @@ module.exports = {
     getDoctorInformationById: getDoctorInformationById,
     getAllPatientsByDateAndDoctorId: getAllPatientsByDateAndDoctorId,
     getAllSchedulesByDateAndDoctorId: getAllSchedulesByDateAndDoctorId,
+    sendPrescription: sendPrescription,
 }
