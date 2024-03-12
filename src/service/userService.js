@@ -171,7 +171,6 @@ let updateUserData = (data) => {
                     message: "Missing Required Parameter",
                 });
             }
-            console.log("check", data);
 
             let user = await db.User.findOne({
                 where: { id: data.id },

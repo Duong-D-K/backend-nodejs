@@ -44,6 +44,45 @@ let saveDoctorInfo = async (req, res) => {
     }
 }
 
+let createDoctor = async (req, res) => {
+    try {
+        return res.status(200).json(await doctorService.createDoctor(req.body));
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
+    }
+}
+
+let updateDoctor = async (req, res) => {
+    try {
+        return res.status(200).json(await doctorService.updateDoctor(req.body));
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
+    }
+}
+
+let deleteDoctor = async (req, res) => {
+    try {
+        return res.status(200).json(await doctorService.deleteDoctor(req.params.doctorId));
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
+    }
+}
+
 let getDoctorById = async (req, res) => {
     try {
         return res.status(200).json(await doctorService.getDoctorById(req.query.id));
@@ -145,5 +184,9 @@ module.exports = {
     getDoctorInformationById: getDoctorInformationById,
     getAllPatientsByDateAndDoctorId,
     getAllSchedulesByDateAndDoctorId: getAllSchedulesByDateAndDoctorId,
-    sendPrescription: sendPrescription
+    sendPrescription: sendPrescription,
+
+    updateDoctor,
+    createDoctor,
+    deleteDoctor,
 }

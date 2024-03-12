@@ -34,7 +34,15 @@ let getAllDoctors = () => {
         try {
             let doctors = await db.User.findAll({
                 where: { roleId: "R2" },
-                attributes: { exclude: ["password", "image"] },
+                attributes: { exclude: ["password", "createdAt", "updatedAt", "specialtyId"] },
+                include: [
+                    { model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"] },
+                    { model: db.Allcode, as: "genderData", attributes: ["valueEn", "valueVi"] },
+                    { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
+                    { model: db.Clinic, attributes: ["id", "name"] },
+                ],
+                raw: false,
+                nest: true,
             });
 
             resolve({
@@ -250,6 +258,138 @@ let bulkCreateSchedule = (data) => {
     });
 }
 
+let createDoctor = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let requiredFields = ["email", "password", "firstName", "lastName", "address", "phoneNumber", "gender", "position", "specialty", "clinic", "image"];
+
+            if (requiredFields.some(field => !data[field])) {
+                let missingField = requiredFields.find(field => !data[field]);
+                resolve({
+                    code: 1,
+                    message: `Missing Parameter: ${missingField}`,
+                })
+            } else {
+                let [, created] = await db.User.findOrCreate({
+                    where: {
+                        email: data.email,
+                    },
+                    defaults: {
+                        email: data.email,
+                        password: data.password,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        address: data.address,
+                        phoneNumber: data.phoneNumber,
+                        gender: data.gender,
+                        roleId: "R2",
+                        positionId: data.position,
+                        clinicId: data.clinic,
+                        specialtyId: data.specialty,
+                        image: data.image,
+                    }
+                });
+
+                if (created === true) {
+                    resolve({
+                        code: 0,
+                        message: "Create New Doctor Sucessful!"
+                    })
+                } else {
+                    resolve({
+                        code: 2,
+                        message: "Email Already Exists!"
+                    })
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+};
+
+let updateDoctor = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let requiredFields = ["id", "email", "firstName", "lastName", "address", "phoneNumber", "gender", "position", "specialty", "clinic", "avatar"];
+
+            if (requiredFields.some(field => !data[field])) {
+                let missingField = requiredFields.find(field => !data[field]);
+                resolve({
+                    code: 1,
+                    message: `Missing Parameter: ${missingField}`,
+                })
+            } else {
+                let doctor = await db.User.findOne({
+                    where: { id: data.id },
+                    raw: false,
+                    attributes: { exclude: ["createdAt", "updatedAt", "password"] },
+                });
+
+                if (doctor) {
+                    doctor.email = data.email;
+                    doctor.firstName = data.firstName;
+                    doctor.lastName = data.lastName
+                    doctor.address = data.address;
+                    doctor.phoneNumber = data.phoneNumber;
+                    doctor.gender = data.gender;
+                    doctor.image = data.avatar;
+                    doctor.positionId = data.position;
+                    doctor.specialtyId = data.specialty;
+                    doctor.clinicId = data.clinic;
+                }
+
+                await doctor.save();
+
+                resolve({
+                    code: 0,
+                    message: "Update Doctor Successfully!",
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+};
+
+let deleteDoctor = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id) {
+                resolve({
+                    code: 1,
+                    message: "Missing required paremeter!",
+                });
+            }
+
+            let user = await db.User.findOne({ where: { id: id } });
+
+            if (!user) {
+                resolve({ code: 2, message: "Doctor is not exist" });
+            }
+
+            //await user.destroy();
+
+            await db.User.destroy({
+                //xung đột giữa biến instant của sequelize
+                //khi dùng raw: true thì kết quả trả về là một object
+
+                //cách dùng await db.User.destroy() sẽ kết nối xuống dưới db rồi xóa ở dưới db
+                //còn cách dùng await user.destroy(); là lấy data từ db lên nodejs xong mới gọi đến hàm destroy() của sequelize
+                //cách này khi gọi đến hàm của sequelize, nó chỉ hiểu được khi đối tượng gọi nó là một instant "user"
+                //hay là kiểu follow form chuẩn của sequelize thì nói mới hiểu được
+                //khi ta dùng raw:true thì data lấy lên từ db không còn là instant của sequelize nữa mà là kiểu object
+                //nên khi gọi hàm destroy() sẽ bị lỗi
+                where: { id: id },
+            });
+
+            resolve({ code: 0, message: "Delete Doctor Successfully!!" });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 let getScheduleByDate = (doctorId, date) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -444,4 +584,7 @@ module.exports = {
     getAllPatientsByDateAndDoctorId: getAllPatientsByDateAndDoctorId,
     getAllSchedulesByDateAndDoctorId: getAllSchedulesByDateAndDoctorId,
     sendPrescription: sendPrescription,
+    updateDoctor,
+    createDoctor,
+    deleteDoctor,
 }

@@ -7,6 +7,10 @@ module.exports = (sequelize, DataTypes) => {
             User.belongsTo(models.Allcode, { foreignKey: "positionId", targetKey: "keyMap", as: "positionData" });
             User.belongsTo(models.Allcode, { foreignKey: "roleId", targetKey: "keyMap", as: "roleData" });
 
+            User.belongsTo(models.Specialty, { foreignKey: "specialtyId" })
+
+            User.belongsTo(models.Clinic, { foreignKey: "clinicId" })
+
             User.hasOne(models.Markdown, { foreignKey: "doctorId" });
 
             User.hasOne(models.Doctor_Information, { foreignKey: "doctorId" });
@@ -24,6 +28,8 @@ module.exports = (sequelize, DataTypes) => {
             image: DataTypes.STRING,
             roleId: DataTypes.STRING,
             positionId: DataTypes.STRING,
+            specialtyId: DataTypes.STRING,
+            clinicId: DataTypes.STRING,
         },
         {
             sequelize,

@@ -5,6 +5,8 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             Clinic.belongsTo(models.District, { foreignKey: "districtId", as: "district" });
             Clinic.belongsTo(models.Province, { foreignKey: "provinceId", as: "province" });
+
+            Clinic.hasOne(models.User, { foreignKey: "id" });
         }
     }
     Clinic.init(
