@@ -31,9 +31,9 @@ let getAllDoctors = async (req, res) => {
     }
 }
 
-let saveDoctorInfo = async (req, res) => {
+let saveDoctorIntroduction = async (req, res) => {
     try {
-        return res.status(200).json(await doctorService.saveDoctorInfo(req.body));
+        return res.status(200).json(await doctorService.saveDoctorIntroduction(req.body));
     } catch (e) {
         console.log(e);
 
@@ -177,7 +177,6 @@ let sendPrescription = async (req, res) => {
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
-    saveDoctorInfo: saveDoctorInfo,
     getDoctorById: getDoctorById,
     bulkCreateSchedule: bulkCreateSchedule,
     getScheduleByDate: getScheduleByDate,
@@ -189,4 +188,6 @@ module.exports = {
     updateDoctor,
     createDoctor,
     deleteDoctor,
+    saveDoctorIntroduction,
+
 }

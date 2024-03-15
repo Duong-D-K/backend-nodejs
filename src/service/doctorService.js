@@ -34,10 +34,12 @@ let getAllDoctors = () => {
         try {
             let doctors = await db.User.findAll({
                 where: { roleId: "R2" },
-                attributes: { exclude: ["password", "createdAt", "updatedAt", "specialtyId"] },
+                attributes: { exclude: ["password", "createdAt", "updatedAt", "positionId", "specialtyId", "gender", "paymentId", "priceId"] },
                 include: [
-                    { model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"] },
-                    { model: db.Allcode, as: "genderData", attributes: ["valueEn", "valueVi"] },
+                    { model: db.Allcode, as: "positionData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                    { model: db.Allcode, as: "genderData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                    { model: db.Allcode, as: "priceData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                    { model: db.Allcode, as: "paymentData", attributes: ["keyMap", "valueEn", "valueVi"] },
                     { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
                     { model: db.Clinic, attributes: ["id", "name"] },
                 ],
@@ -55,83 +57,37 @@ let getAllDoctors = () => {
     })
 }
 
-let saveDoctorInfo = (inputData) => {
+let saveDoctorIntroduction = (doctor) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let requiredFields = ["doctorId", "contentHTML", "contentMarkdown", "action", "selectedPrice", "selectedPayment", "selectedProvince", "clinicName", "clinicAddress", "description", "note", "clinicId", "specialtyId",];
+            let requiredFields = ["doctorId", "contentHTML", "contentMarkdown", "introduction", "note"];
 
-            if (requiredFields.some(field => !inputData[field])) {
-                let missingField = requiredFields.find(field => !inputData[field]);
+            if (requiredFields.some(field => !doctor[field])) {
+                let missingField = requiredFields.find(field => !doctor[field]);
                 resolve({
                     code: 1,
                     message: `Missing Parameter: ${missingField}`,
                 })
             } else {
-                if (inputData.action === "CREATE") {
-                    await db.Markdown.create({
-                        contentHTML: inputData.contentHTML,
-                        contentMarkdown: inputData.contentMarkdown,
-                        description: inputData.description,
-                        doctorId: inputData.doctorId,
-                    });
-
-                    resolve({
-                        code: 0,
-                        message: "Save Doctor Successfully!",
-                    })
-                } else if (inputData.action === "UPDATE") {
-                    let markdown = await db.Markdown.findOne({
-                        where: { doctorId: inputData.doctorId },
-                        raw: false,
-                    });
-
-                    if (markdown) {
-                        markdown.contentHTML = inputData.contentHTML;
-                        markdown.contentMarkdown = inputData.contentMarkdown;
-                        markdown.description = inputData.description;
-                    }
-
-                    await markdown.save();
-
-                    resolve({
-                        code: 0,
-                        message: "Update Doctor Successfully!",
-                    });
-                }
-
-                let doctorInfo = await db.Doctor_Information.findOne({
-                    where: { doctorId: inputData.doctorId },
+                let data = await db.User.findOne({
+                    where: { id: doctor.doctorId },
+                    attributes: ["contentHTML", "contentMarkdown", "introduction", "note", "id"],
                     raw: false,
-                })
+                });
 
-                if (doctorInfo) {
-                    //update
-                    doctorInfo.priceId = inputData.selectedPrice;
-                    doctorInfo.paymentId = inputData.selectedPayment;
-                    doctorInfo.provinceId = inputData.selectedProvince;
-
-                    doctorInfo.clinicName = inputData.clinicName;
-                    doctorInfo.clinicAddress = inputData.clinicAddress;
-                    doctorInfo.note = inputData.note;
-                    doctorInfo.specialtyId = inputData.specialtyId;
-                    doctorInfo.clinicId = inputData.clinicId;
-
-                    await doctorInfo.save();
-                } else {
-                    //create
-                    await db.Doctor_Information.create({
-                        doctorId: inputData.doctorId,
-                        priceId: inputData.selectedPrice,
-                        paymentId: inputData.selectedPayment,
-                        provinceId: inputData.selectedProvince,
-                        specialtyId: inputData.specialtyId,
-                        clinicId: inputData.clinicId,
-
-                        clinicName: inputData.clinicName,
-                        clinicAddress: inputData.clinicAddress,
-                        note: inputData.note,
-                    })
+                if (data) {
+                    data.contentHTML = doctor.contentHTML;
+                    data.contentMarkdown = doctor.contentMarkdown;
+                    data.introduction = doctor.introduction;
+                    data.note = doctor.note;
                 }
+
+                await data.save();
+
+                resolve({
+                    code: 0,
+                    message: "Save Doctor Introduction Successfully!",
+                });
             }
         } catch (e) {
             reject(e);
@@ -151,31 +107,11 @@ let getDoctorById = (id) => {
                 let data = await db.User.findOne({
                     where: { id: id },
                     attributes: { exclude: ["password", "createdAt", "updatedAt"] },
-                    include: [
-                        {
-                            model: db.Markdown,
-                            attributes: ["description", "contentMarkdown", "contentHTML"],
-                        },
-                        {
-                            model: db.Allcode,
-                            as: "positionData", attributes: ["valueEn", "valueVi"],
-                        },
-                        {
-                            model: db.Doctor_Information,
-                            attributes: { exclude: ["id", "doctorId", "createdAt", "updatedAt"] },
-                            include: [
-                                { model: db.Allcode, as: "priceData", attributes: ["valueEn", "valueVi"] },
-                                { model: db.Allcode, as: "paymentData", attributes: ["valueEn", "valueVi"] },
-                                { model: db.Allcode, as: "provinceData", attributes: ["valueEn", "valueVi"] },
-                                { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
-                            ]
-                        },
-                    ],
                     raw: false,
                     nest: true,
                 });
 
-                if (data && data.image) {//change image to base 64
+                if (data && data.image) {
                     data.image = new Buffer(data.image, "base64").toString("binary");
                 }
 
@@ -261,7 +197,7 @@ let bulkCreateSchedule = (data) => {
 let createDoctor = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let requiredFields = ["email", "password", "firstName", "lastName", "address", "phoneNumber", "gender", "position", "specialty", "clinic", "image"];
+            let requiredFields = ["email", "password", "firstName", "lastName", "address", "phoneNumber", "gender", "position", "specialty", "clinic", "image", "price", "payment"];
 
             if (requiredFields.some(field => !data[field])) {
                 let missingField = requiredFields.find(field => !data[field]);
@@ -287,6 +223,8 @@ let createDoctor = (data) => {
                         clinicId: data.clinic,
                         specialtyId: data.specialty,
                         image: data.image,
+                        priceId: data.price,
+                        paymentId: data.payment,
                     }
                 });
 
@@ -311,7 +249,7 @@ let createDoctor = (data) => {
 let updateDoctor = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let requiredFields = ["id", "email", "firstName", "lastName", "address", "phoneNumber", "gender", "position", "specialty", "clinic", "avatar"];
+            let requiredFields = ["id", "email", "firstName", "lastName", "address", "phoneNumber", "gender", "position", "specialty", "clinic", "avatar", "price", "payment"];
 
             if (requiredFields.some(field => !data[field])) {
                 let missingField = requiredFields.find(field => !data[field]);
@@ -337,6 +275,8 @@ let updateDoctor = (data) => {
                     doctor.positionId = data.position;
                     doctor.specialtyId = data.specialty;
                     doctor.clinicId = data.clinic;
+                    doctor.priceId = data.price;
+                    doctor.paymentId = data.payment;
                 }
 
                 await doctor.save();
@@ -575,15 +515,17 @@ let sendPrescription = (data) => {
 
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
-    getAllDoctors: getAllDoctors,
-    saveDoctorInfo: saveDoctorInfo,
-    getDoctorById: getDoctorById,
+    saveDoctorIntroduction,
     bulkCreateSchedule: bulkCreateSchedule,
     getScheduleByDate: getScheduleByDate,
     getDoctorInformationById: getDoctorInformationById,
     getAllPatientsByDateAndDoctorId: getAllPatientsByDateAndDoctorId,
     getAllSchedulesByDateAndDoctorId: getAllSchedulesByDateAndDoctorId,
     sendPrescription: sendPrescription,
+
+
+    getAllDoctors,
+    getDoctorById,
     updateDoctor,
     createDoctor,
     deleteDoctor,

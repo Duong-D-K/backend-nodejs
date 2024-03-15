@@ -26,6 +26,32 @@ let getAllSpecialties = async (req, res) => {
     }
 }
 
+let updateSpecialty = async (req, res) => {
+    try {
+        return res.status(200).json(await specialtyService.updateSpecialty(req.body));
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
+    }
+}
+
+let deleteSpecialty = async (req, res) => {
+    try {
+        return res.status(200).json(await specialtyService.deleteSpecialty(req.params.specialtyId));
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
+    }
+}
+
 let getAllDoctorsInSpecialty = async (req, res) => {
     try {
         return res.status(200).json(await specialtyService.getAllDoctorsInSpecialty(req.query.id, req.query.location));
@@ -38,9 +64,12 @@ let getAllDoctorsInSpecialty = async (req, res) => {
         });
     }
 }
-module.exports = {
-    createSpecialty: createSpecialty,
-    getAllSpecialties: getAllSpecialties,
-    getAllDoctorsInSpecialty: getAllDoctorsInSpecialty,
 
+
+module.exports = {
+    createSpecialty,
+    getAllSpecialties,
+    getAllDoctorsInSpecialty: getAllDoctorsInSpecialty,
+    updateSpecialty,
+    deleteSpecialty,
 }

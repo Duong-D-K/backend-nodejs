@@ -213,7 +213,10 @@ let getAllCodesService = (typeInput) => {
                 resolve({
                     code: 0,
                     message: "",
-                    data: await db.Allcode.findAll({ where: { type: typeInput } }),
+                    data: await db.Allcode.findAll({
+                        where: { type: typeInput },
+                        attributes: { exclude: ["createdAt", "updatedAt", "type", "id"] },
+                    }),
                 });
             }
 

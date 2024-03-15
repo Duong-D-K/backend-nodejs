@@ -4,9 +4,11 @@ module.exports = (sequelize, DataTypes) => {
     class Allcode extends Model {
 
         static associate(models) {
-            Allcode.hasMany(models.User, { foreignKey: "positionId", as: "positionData" });
+            Allcode.hasMany(models.User, { foreignKey: "positionId" });
             Allcode.hasMany(models.User, { foreignKey: "gender", as: "genderData" });
             Allcode.hasMany(models.User, { foreignKey: "roleId", as: "roleData" });
+            Allcode.hasMany(models.User, { foreignKey: "priceId" });
+            Allcode.hasMany(models.User, { foreignKey: "paymentId", as: "payment" });
 
             Allcode.hasMany(models.Schedule, { foreignKey: "timeType", as: "timeTypeData" });
 

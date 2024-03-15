@@ -6,6 +6,8 @@ module.exports = (sequelize, DataTypes) => {
             User.belongsTo(models.Allcode, { foreignKey: "gender", targetKey: "keyMap", as: "genderData" });
             User.belongsTo(models.Allcode, { foreignKey: "positionId", targetKey: "keyMap", as: "positionData" });
             User.belongsTo(models.Allcode, { foreignKey: "roleId", targetKey: "keyMap", as: "roleData" });
+            User.belongsTo(models.Allcode, { foreignKey: "priceId", targetKey: "keyMap", as: "priceData" });
+            User.belongsTo(models.Allcode, { foreignKey: "paymentId", targetKey: "keyMap", as: "paymentData" });
 
             User.belongsTo(models.Specialty, { foreignKey: "specialtyId" })
 
@@ -30,6 +32,12 @@ module.exports = (sequelize, DataTypes) => {
             positionId: DataTypes.STRING,
             specialtyId: DataTypes.STRING,
             clinicId: DataTypes.STRING,
+            paymentId: DataTypes.STRING,
+            priceId: DataTypes.STRING,
+            introduction: DataTypes.TEXT("long"),
+            note: DataTypes.TEXT("long"),
+            contentHTML: DataTypes.TEXT("long"),
+            contentMarkdown: DataTypes.TEXT("long"),
         },
         {
             sequelize,
