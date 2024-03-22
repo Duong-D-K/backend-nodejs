@@ -4,6 +4,8 @@ module.exports = (sequelize, DataTypes) => {
     class Province extends Model {
         static associate(models) {
             Province.hasMany(models.Clinic, { foreignKey: "provinceId", as: "province" });
+
+            Province.hasMany(models.User, { foreignKey: "provinceId" });
         }
     }
     Province.init(

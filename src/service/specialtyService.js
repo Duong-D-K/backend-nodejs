@@ -73,6 +73,46 @@ let getAllSpecialties = () => {
     })
 }
 
+let getSpecialtyById = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                let data = await db.Specialty.findOne({
+                    where: { id: id },
+                    attributes: { exclude: ["createdAt", "updatedAt"] },
+                    // include: [
+                    //     { model: db.Allcode, as: "positionData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                    //     { model: db.Allcode, as: "genderData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                    //     { model: db.Allcode, as: "priceData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                    //     { model: db.Allcode, as: "paymentData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                    //     { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
+                    //     { model: db.Clinic, attributes: ["id", "name", "address"], }
+                    //     ,
+                    // ],
+                    raw: false,
+                    nest: true,
+                });
+
+                if (data && data.image) {
+                    data.image = new Buffer(data.image, "base64").toString("binary");
+                }
+
+                resolve({
+                    code: 0,
+                    data: data ? data : {},
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 let updateSpecialty = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -108,88 +148,6 @@ let updateSpecialty = (data) => {
                 })
             }
 
-        } catch (e) {
-            reject(e);
-        }
-    })
-}
-
-let getAllDoctorsInSpecialty = (id, location) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!id || !location) {
-                resolve({
-                    code: 1,
-                    message: "Missing required parameter!!",
-                });
-            } else {
-                let specialty = await db.Specialty.findOne({
-                    where: { id: id },
-                    attributes: { exclude: ["createdAt", "updatedAt"] },
-                });
-
-                let doctors = [];
-
-                if (location === "ALL") {
-                    doctors = await db.Doctor_Information.findAll({
-                        where: { specialtyId: id },
-                        attributes: { exclude: [""] },
-                        raw: false,
-                        nest: true,
-                    });
-                } else {
-                    //find by location
-                    doctors = await db.Doctor_Information.findAll({
-                        where: {
-                            specialtyId: id,
-                            provinceId: location,
-                        },
-                        attributes: { exclude: [""] },
-                        raw: false,
-                        nest: true,
-                    });
-                }
-
-
-                const updatedDoctors = await Promise.all(doctors.map(async (item, index) => {
-                    let markdown = await db.Markdown.findOne({
-                        where: {
-                            doctorId: item.doctorId,
-                        },
-                        attributes: ["description"],
-                        raw: false,
-                        nest: true,
-                    });
-
-                    let user = await db.User.findOne({
-                        where: {
-                            id: item.doctorId,
-                        },
-                        attributes: ["image", "firstName", "lastName"],
-                        include: [
-                            { model: db.Allcode, as: "positionData", attributes: ["valueEn", "valueVi"] },
-                        ],
-                        raw: false,
-                        nest: true,
-                    });
-
-                    if (user && user.image) {//change image to base 64
-                        user.image = new Buffer(user.image, "base64").toString("binary");
-                    }
-
-                    // Thêm giá trị markdown vào mỗi thành phần con của doctors
-                    return {
-                        ...item.toJSON(),
-                        Markdown: markdown ? markdown.get({ plain: true }) : null,
-                        User: user ? user.get({ plain: true }) : null,
-                    };
-                }));
-
-                resolve({
-                    code: 0,
-                    data: updatedDoctors && specialty ? { updatedDoctors: updatedDoctors, specialty: specialty } : "",
-                });
-            }
         } catch (e) {
             reject(e);
         }
@@ -234,9 +192,9 @@ let deleteSpecialty = (id) => {
     });
 };
 module.exports = {
-    createSpecialty,
     getAllSpecialties,
-    getAllDoctorsInSpecialty: getAllDoctorsInSpecialty,
+    getSpecialtyById,
+    createSpecialty,
     updateSpecialty,
     deleteSpecialty,
 }

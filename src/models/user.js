@@ -16,6 +16,9 @@ module.exports = (sequelize, DataTypes) => {
             User.hasOne(models.Markdown, { foreignKey: "doctorId" });
 
             User.hasOne(models.Doctor_Information, { foreignKey: "doctorId" });
+
+            User.belongsTo(models.Province, { foreignKey: "provinceId" })
+
         }
     };
     User.init(
@@ -24,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
             password: DataTypes.STRING,
             firstName: DataTypes.STRING,
             lastName: DataTypes.STRING,
-            address: DataTypes.STRING,
+            provinceId: DataTypes.STRING,
             phoneNumber: DataTypes.STRING,
             gender: DataTypes.STRING,
             image: DataTypes.STRING,

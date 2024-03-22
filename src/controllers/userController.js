@@ -1,23 +1,16 @@
 import userService from "../service/userService";
 
 let handleLogin = async (req, res) => {
-    let email = req.body.email;
-    let password = req.body.password;
+    try {
+        return res.status(200).json(await userService.handleUserLogin(req.body.email, req.body.password));
+    } catch (e) {
+        console.log(e);
 
-    //thay the [email==="" || email===null || email ==="undefined"] bang !email
-    if (!email || !password) {
-        return res.status(500).json({
-            code: 1,
-            message: "Missing inputs parameters",
-        });
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        })
     }
-    let userData = await userService.handleUserLogin(email, password);
-
-    return res.status(200).json({
-        code: userData.errCode,
-        message: userData.errMessage,
-        user: userData.user ? userData.user : {},
-    });
 };
 
 let handleGetAllUsers = async (req, res) => {

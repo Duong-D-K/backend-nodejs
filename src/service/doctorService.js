@@ -34,7 +34,7 @@ let getAllDoctors = () => {
         try {
             let doctors = await db.User.findAll({
                 where: { roleId: "R2" },
-                attributes: { exclude: ["password", "createdAt", "updatedAt", "positionId", "specialtyId", "gender", "paymentId", "priceId"] },
+                attributes: { exclude: ["password", "createdAt", "updatedAt", "positionId", "specialtyId", "gender", "paymentId", "priceId", "clinicId"] },
                 include: [
                     { model: db.Allcode, as: "positionData", attributes: ["keyMap", "valueEn", "valueVi"] },
                     { model: db.Allcode, as: "genderData", attributes: ["keyMap", "valueEn", "valueVi"] },
@@ -42,6 +42,7 @@ let getAllDoctors = () => {
                     { model: db.Allcode, as: "paymentData", attributes: ["keyMap", "valueEn", "valueVi"] },
                     { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
                     { model: db.Clinic, attributes: ["id", "name"] },
+                    { model: db.Province, attributes: ["id", "nameVi", "nameEn"] },
                 ],
                 raw: false,
                 nest: true,
@@ -106,7 +107,16 @@ let getDoctorById = (id) => {
             } else {
                 let data = await db.User.findOne({
                     where: { id: id },
-                    attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+                    attributes: { exclude: ["password", "createdAt", "updatedAt", "positionId", "specialtyId", "gender", "paymentId", "priceId", "clinicId"] },
+                    include: [
+                        { model: db.Allcode, as: "positionData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "genderData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "priceData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "paymentData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                        { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
+                        { model: db.Clinic, attributes: ["id", "name", "address"], }
+                        ,
+                    ],
                     raw: false,
                     nest: true,
                 });
@@ -197,7 +207,7 @@ let bulkCreateSchedule = (data) => {
 let createDoctor = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let requiredFields = ["email", "password", "firstName", "lastName", "address", "phoneNumber", "gender", "position", "specialty", "clinic", "image", "price", "payment"];
+            let requiredFields = ["email", "password", "firstName", "lastName", "provinceId", "phoneNumber", "gender", "position", "specialty", "clinic", "image", "price", "payment", "contentHTML", "contentMarkdown", "introduction", "note"];
 
             if (requiredFields.some(field => !data[field])) {
                 let missingField = requiredFields.find(field => !data[field]);
@@ -215,7 +225,7 @@ let createDoctor = (data) => {
                         password: data.password,
                         firstName: data.firstName,
                         lastName: data.lastName,
-                        address: data.address,
+                        provinceId: data.provinceId,
                         phoneNumber: data.phoneNumber,
                         gender: data.gender,
                         roleId: "R2",
@@ -225,6 +235,10 @@ let createDoctor = (data) => {
                         image: data.image,
                         priceId: data.price,
                         paymentId: data.payment,
+                        contentHTML: data.contentHTML,
+                        contentMarkdown: data.contentMarkdown,
+                        introduction: data.introduction,
+                        note: data.note,
                     }
                 });
 
@@ -249,7 +263,7 @@ let createDoctor = (data) => {
 let updateDoctor = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let requiredFields = ["id", "email", "firstName", "lastName", "address", "phoneNumber", "gender", "position", "specialty", "clinic", "avatar", "price", "payment"];
+            let requiredFields = ["id", "email", "firstName", "lastName", "provinceId", "phoneNumber", "gender", "position", "specialty", "clinic", "image", "price", "payment", "contentHTML", "contentMarkdown", "introduction", "note"];
 
             if (requiredFields.some(field => !data[field])) {
                 let missingField = requiredFields.find(field => !data[field]);
@@ -268,15 +282,19 @@ let updateDoctor = (data) => {
                     doctor.email = data.email;
                     doctor.firstName = data.firstName;
                     doctor.lastName = data.lastName
-                    doctor.address = data.address;
+                    doctor.provinceId = data.provinceId;
                     doctor.phoneNumber = data.phoneNumber;
                     doctor.gender = data.gender;
-                    doctor.image = data.avatar;
+                    doctor.image = data.image;
                     doctor.positionId = data.position;
                     doctor.specialtyId = data.specialty;
                     doctor.clinicId = data.clinic;
                     doctor.priceId = data.price;
                     doctor.paymentId = data.payment;
+                    doctor.contentHTML = data.contentHTML;
+                    doctor.contentMarkdown = data.contentMarkdown;
+                    doctor.indtroduction = data.introduction;
+                    doctor.note = data.note;
                 }
 
                 await doctor.save();
@@ -343,6 +361,7 @@ let getScheduleByDate = (doctorId, date) => {
                     where: {
                         doctorId: doctorId, date: date,
                     },
+                    attributes: { exclude: ["currentNumber", "maxNumber", "createdAt", "updatedAt"] },
                     include: [
                         { model: db.Allcode, as: "timeTypeData", attributes: ["valueEn", "valueVi"] },
                     ],
@@ -363,37 +382,37 @@ let getScheduleByDate = (doctorId, date) => {
     });
 }
 
-let getDoctorInformationById = (doctorId) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!doctorId) {
-                resolve({
-                    code: 1,
-                    message: "Missing required parameter!!",
-                });
-            } else {
-                let data = await db.Doctor_Information.findOne({
-                    where: { doctorId: doctorId },
-                    attributes: { exclude: ["id", "doctorId", "createdAt", "updatedAt"] },
-                    include: [
-                        { model: db.Allcode, as: "priceData", attributes: ["valueEn", "valueVi"] },
-                        { model: db.Allcode, as: "paymentData", attributes: ["valueEn", "valueVi"] },
-                        { model: db.Allcode, as: "provinceData", attributes: ["valueEn", "valueVi"] },
-                    ],
-                    raw: false,
-                    nest: true,
-                });
+// let getDoctorInformationById = (doctorId) => {
+//     return new Promise(async (resolve, reject) => {
+//         try {
+//             if (!doctorId) {
+//                 resolve({
+//                     code: 1,
+//                     message: "Missing required parameter!!",
+//                 });
+//             } else {
+//                 let data = await db.Doctor_Information.findOne({
+//                     where: { doctorId: doctorId },
+//                     attributes: { exclude: ["id", "doctorId", "createdAt", "updatedAt"] },
+//                     include: [
+//                         { model: db.Allcode, as: "priceData", attributes: ["valueEn", "valueVi"] },
+//                         { model: db.Allcode, as: "paymentData", attributes: ["valueEn", "valueVi"] },
+//                         { model: db.Allcode, as: "provinceData", attributes: ["valueEn", "valueVi"] },
+//                     ],
+//                     raw: false,
+//                     nest: true,
+//                 });
 
-                resolve({
-                    code: 0,
-                    data: data ? data : {},
-                });
-            }
-        } catch (e) {
-            reject(e);
-        }
-    })
-}
+//                 resolve({
+//                     code: 0,
+//                     data: data ? data : {},
+//                 });
+//             }
+//         } catch (e) {
+//             reject(e);
+//         }
+//     })
+// }
 
 let getAllPatientsByDateAndDoctorId = (doctorId, date) => {
     return new Promise(async (resolve, reject) => {
@@ -474,6 +493,7 @@ let getAllSchedulesByDateAndDoctorId = (doctorId, date) => {
     })
 }
 
+
 let sendPrescription = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -513,14 +533,141 @@ let sendPrescription = (data) => {
     })
 }
 
+let getAllDoctorsBySpecialtyId = (specialtyId, location) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!specialtyId || !location) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                if (location === "ALL") {
+                    let doctors = await db.User.findAll({
+                        where: {
+                            roleId: "R2",
+                            specialtyId: specialtyId,
+
+                        },
+                        attributes: { exclude: ["password", "createdAt", "updatedAt", "positionId", "specialtyId", "gender", "paymentId", "priceId", "clinicId"] },
+                        include: [
+                            { model: db.Allcode, as: "positionData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                            { model: db.Allcode, as: "genderData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                            { model: db.Allcode, as: "priceData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                            { model: db.Allcode, as: "paymentData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                            { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
+                            { model: db.Clinic, attributes: ["id", "name"] },
+                            { model: db.Province, attributes: ["id", "nameVi", "nameEn"] },
+                        ],
+                        raw: false,
+                        nest: true,
+                    });
+
+                    doctors.map(item => {
+                        if (item && item.image) {
+                            item.image = new Buffer(item.image, "base64").toString("binary");
+                        }
+                    })
+
+                    resolve({
+                        code: 0,
+                        data: doctors ? doctors : "",
+                    });
+                } else {
+                    //find by location
+                    let doctors = await db.User.findAll({
+                        where: {
+                            roleId: "R2",
+                            specialtyId: specialtyId,
+                            provinceId: location,
+
+                        },
+                        attributes: { exclude: ["password", "createdAt", "updatedAt", "positionId", "specialtyId", "gender", "paymentId", "priceId", "clinicId"] },
+                        include: [
+                            { model: db.Allcode, as: "positionData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                            { model: db.Allcode, as: "genderData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                            { model: db.Allcode, as: "priceData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                            { model: db.Allcode, as: "paymentData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                            { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
+                            { model: db.Clinic, attributes: ["id", "name"] },
+                            { model: db.Province, attributes: ["id", "nameVi", "nameEn"] },
+                        ],
+                        raw: false,
+                        nest: true,
+                    });
+
+                    doctors.map(item => {
+                        if (item && item.image) {
+                            item.image = new Buffer(item.image, "base64").toString("binary");
+                        }
+                    })
+
+                    resolve({
+                        code: 0,
+                        data: doctors ? doctors : "",
+                    });
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getAllDoctorsByClinicId = (clinicId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!clinicId) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                });
+            } else {
+                let doctors = await db.User.findAll({
+                    where: {
+                        roleId: "R2",
+                        clinicId: clinicId,
+                    },
+                    attributes: { exclude: ["password", "createdAt", "updatedAt", "positionId", "specialtyId", "gender", "paymentId", "priceId", "clinicId"] },
+                    include: [
+                        { model: db.Allcode, as: "positionData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "genderData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "priceData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                        { model: db.Allcode, as: "paymentData", attributes: ["keyMap", "valueEn", "valueVi"] },
+                        { model: db.Specialty, attributes: ["id", "nameVi", "nameEn"] },
+                        { model: db.Clinic, attributes: ["id", "name"] },
+                        { model: db.Province, attributes: ["id", "nameVi", "nameEn"] },
+                    ],
+                    raw: false,
+                    nest: true,
+                });
+
+                doctors.map(item => {
+                    if (item && item.image) {
+                        item.image = new Buffer(item.image, "base64").toString("binary");
+                    }
+                })
+
+                resolve({
+                    code: 0,
+                    data: doctors ? doctors : "",
+                });
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     saveDoctorIntroduction,
     bulkCreateSchedule: bulkCreateSchedule,
-    getScheduleByDate: getScheduleByDate,
-    getDoctorInformationById: getDoctorInformationById,
+    getScheduleByDate,
+    // getDoctorInformationById: getDoctorInformationById,
     getAllPatientsByDateAndDoctorId: getAllPatientsByDateAndDoctorId,
-    getAllSchedulesByDateAndDoctorId: getAllSchedulesByDateAndDoctorId,
+    getAllSchedulesByDateAndDoctorId,
     sendPrescription: sendPrescription,
 
 
@@ -529,4 +676,6 @@ module.exports = {
     updateDoctor,
     createDoctor,
     deleteDoctor,
+    getAllDoctorsBySpecialtyId,
+    getAllDoctorsByClinicId,
 }

@@ -65,11 +65,24 @@ let getAllDoctorsInSpecialty = async (req, res) => {
     }
 }
 
+let getSpecialtyById = async (req, res) => {
+    try {
+        return res.status(200).json(await specialtyService.getSpecialtyById(req.query.id));
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
+    }
+}
 
 module.exports = {
     createSpecialty,
     getAllSpecialties,
-    getAllDoctorsInSpecialty: getAllDoctorsInSpecialty,
+    getSpecialtyById,
     updateSpecialty,
     deleteSpecialty,
+
 }

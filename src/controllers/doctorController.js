@@ -174,10 +174,33 @@ let sendPrescription = async (req, res) => {
     }
 }
 
+let getAllDoctorsBySpecialtyId = async (req, res) => {
+    try {
+        return res.status(200).json(await doctorService.getAllDoctorsBySpecialtyId(req.query.id, req.query.location));
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
+    }
+}
+let getAllDoctorsByClinicId = async (req, res) => {
+    try {
+        return res.status(200).json(await doctorService.getAllDoctorsByClinicId(req.query.clinicId));
+    } catch (e) {
+        console.log(e);
+
+        return res.status(200).json({
+            code: -1,
+            message: "Error Code From Server!",
+        });
+    }
+}
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
-    getAllDoctors: getAllDoctors,
-    getDoctorById: getDoctorById,
+
     bulkCreateSchedule: bulkCreateSchedule,
     getScheduleByDate: getScheduleByDate,
     getDoctorInformationById: getDoctorInformationById,
@@ -185,9 +208,12 @@ module.exports = {
     getAllSchedulesByDateAndDoctorId: getAllSchedulesByDateAndDoctorId,
     sendPrescription: sendPrescription,
 
+    getAllDoctors,
+    getDoctorById,
     updateDoctor,
     createDoctor,
     deleteDoctor,
     saveDoctorIntroduction,
-
+    getAllDoctorsBySpecialtyId,
+    getAllDoctorsByClinicId,
 }

@@ -138,6 +138,6 @@ let examinationVerification = (data) => {
     })
 }
 module.exports = {
-    appointmentBooking: appointmentBooking,
-    examinationVerification: examinationVerification,
+    appointmentBooking,
+    examinationVerification,
 }

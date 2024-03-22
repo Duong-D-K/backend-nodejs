@@ -19,36 +19,50 @@ let hashPassword = (password) => {
 let handleUserLogin = (email, password) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let userData = {};
+            if (!email || !password) {
+                resolve({
+                    code: 1,
+                    message: "Missing required parameter!!",
+                })
+            } else {
+                let userData = {};
 
-            if (await checkUserEmail(email)) {
-                //check email exist
-                let user = await db.User.findOne({
-                    attributes: ["id", "email", "roleId", "password", "firstName", "lastName"],
-                    where: { email: email },
-                    raw: true,
-                });
+                if (await checkUserEmail(email)) {
+                    //check email exist
+                    let user = await db.User.findOne({
+                        attributes: ["id", "email", "roleId", "password", "firstName", "lastName"],
+                        where: { email: email },
+                        raw: true,
+                    });
 
-                if (user) {
-                    if (await bcrypt.compareSync(password, user.password)) {
-                        delete user.password; //delete passwrord
+                    if (user) {
+                        if (await bcrypt.compareSync(password, user.password)) {
+                            delete user.password; //delete passwrord
 
-                        userData.errCode = 0;
-                        userData.errMessage = "OK";
-                        userData.user = user;
+                            resolve({
+                                code: 0,
+                                message: "OK!!",
+                                data: user,
+                            })
+                        } else {
+                            resolve({
+                                code: 3,
+                                message: "Wrong Password!",
+                            })
+                        }
                     } else {
-                        userData.errCode = 3;
-                        userData.errMessage = "Wrong Password";
+                        resolve({
+                            code: 2,
+                            message: `User is not exist!`,
+                        })
                     }
                 } else {
-                    userData.errCode = 2;
-                    userData.errMessage = `User is not exist`;
+                    resolve({
+                        code: 4,
+                        message: `Your email isn't exist in our system. Try again! `,
+                    })
                 }
-            } else {
-                userData.errCode = 1;
-                userData.errMessage = `Your email isn't exist in our system. Try again `;
             }
-            resolve(userData);
         } catch (e) {
             reject(e);
         }
